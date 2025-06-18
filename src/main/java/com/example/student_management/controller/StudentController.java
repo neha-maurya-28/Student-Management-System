@@ -7,6 +7,8 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @Controller
 public class StudentController {
 
@@ -16,12 +18,6 @@ public class StudentController {
     @GetMapping("/login")
     public String loginPage() {
         return "login";
-    }
-
-    @GetMapping("/")
-    public String viewHomePage(Model model) {
-        model.addAttribute("listStudents", service.listAll());
-        return "index";
     }
 
     @GetMapping("/showNewStudentForm")
@@ -50,4 +46,25 @@ public class StudentController {
         service.delete(id);
         return "redirect:/";
     }
+
+    @GetMapping("/")
+    public String viewHomePage(
+            @RequestParam(value = "keyword", required = false) String keyword,
+            @RequestParam(value = "sortField", required = false, defaultValue = "name") String sortField,
+            Model model
+    ) {
+        List<Student> listStudents;
+
+        if (keyword != null && !keyword.isEmpty()) {
+            listStudents = service.searchAndSort(keyword, sortField);
+        } else {
+            listStudents = service.sortByField(sortField);
+        }
+
+        model.addAttribute("listStudents", listStudents);
+        model.addAttribute("keyword", keyword);
+        model.addAttribute("sortField", sortField);
+        return "index";
+    }
+
 }
